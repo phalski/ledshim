@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='phalski-ledshim',
-    version='0.0.1',
+    version='0.1.0',
     packages=['phalski_ledshim', 'phalski_ledshim.animation', 'phalski_ledshim.charting', 'phalski_ledshim.threading'],
     url='https://github.com/phalski/phalski-ledshim',
     license='MIT',
