@@ -1,16 +1,24 @@
 from setuptools import setup
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='phalski-ledshim',
     version='0.1.1',
     packages=['phalski_ledshim', 'phalski_ledshim.animation', 'phalski_ledshim.charting', 'phalski_ledshim.threading'],
     url='https://github.com/phalski/phalski-ledshim',
-    license='LICENSE.txt',
     author='phalski',
     author_email='mail@phalski.com',
     description='A basic application framework for the Pimoroni LED SHIM',
-    long_description=open('README.rst').read(),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=[
         'ledshim>=0.0.1'
-    ]
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 )
