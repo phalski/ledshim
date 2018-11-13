@@ -1,3 +1,4 @@
+import logging
 import time
 
 from abc import ABC, abstractmethod
@@ -6,6 +7,8 @@ from typing import List, Sequence, Tuple
 from queue import Queue, Empty
 
 from .. import ColorChangeEvent, ColorSource, LedShim, Palette
+
+__name__ = 'phalski_ledshim.threading'
 
 FPS_DEFAULT = 1 / 16  # 16 FPS
 REFRESH_DEFAULT = 0.1  # 50ms
@@ -98,6 +101,11 @@ class ExampleProducer(Producer):
 class Application:
 
     def __init__(self, refresh_interval: float = FPS_DEFAULT, brightness: float = 1.0, clear_on_exit: bool = True):
+        self._logger = logging.getLogger('%s.%s' % (__name__, self.__class__.__name__))
+        self._logger.setLevel(logging.DEBUG)
+        print(self._logger)
+        self._logger.warning('%s.%s' % (__name__, self.__class__.__name__))
+
         self._ledshim = LedShim(brightness, clear_on_exit)
         self._refresh_interval = refresh_interval
         self._poison_pill = Event()
@@ -108,7 +116,8 @@ class Application:
         return self._ledshim.pixels
 
     def startup(self, *args: Tuple[ColorSource, float]):
-        self._threads = [ColorSourceProducer(source, self._poison_pill, refresh_interval) for source, refresh_interval in args]
+        self._threads = [ColorSourceProducer(source, self._poison_pill, refresh_interval) for source, refresh_interval
+                         in args]
         self._threads.append(
             Consumer(self._ledshim, self._poison_pill, self._refresh_interval, *(p.queue for p in self._threads)))
 

@@ -3,6 +3,7 @@ import ledshim
 from abc import ABC, abstractmethod
 from typing import List, Iterable, NamedTuple, Sequence, Set
 
+print(__name__)
 
 class Color:
 

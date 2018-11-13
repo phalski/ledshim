@@ -1,3 +1,1 @@
-from .phalski_ledshim import Color, ColorChangeEvent, ColorSource, Palette, LedShim
-
-name = "phalski_ledshim"
+# from .phalski_ledshim import ColorChangeEvent, ColorSource, Palette, LedShim
