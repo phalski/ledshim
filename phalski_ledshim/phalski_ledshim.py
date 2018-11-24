@@ -1,9 +1,10 @@
+from __future__ import absolute_import
+
 import ledshim
 
 from abc import ABC, abstractmethod
 from typing import List, Iterable, NamedTuple, Sequence, Set
 
-print(__name__)
 
 class Color:
 

@@ -1,11 +1,11 @@
 import abc
 import enum
-import typing
+from typing import NamedTuple
 
-__all__ = ['Color', 'ColorDepth', 'ColorFactory', 'NamedColor']
+__all__ = ['Color', 'Depth', 'Factory', 'NamedColor']
 
 
-class ColorDepth(enum.Enum):
+class Depth(enum.Enum):
     """An enumeration of color depth encodings"""
     BIT8 = (3, 3, 2)  # 8-bit
     BIT15 = (5, 5, 5)  # HighColor
@@ -14,7 +14,7 @@ class ColorDepth(enum.Enum):
 
     @classmethod
     def max_depth(cls):
-        return ColorDepth.BIT24
+        return Depth.BIT24
 
     @classmethod
     def max_depth_bits(cls):
@@ -37,17 +37,17 @@ class ColorDepth(enum.Enum):
         self.r_max, self.g_max, self.b_max = [self.max_color_value(n) for n in [r, g, b]]
 
 
-class DepthMapper:
+class DepthMapper(object):
 
-    def __init__(self, max_bits: int = ColorDepth.max_depth_bits()):
-        if 0 > max_bits or ColorDepth.max_depth_bits() > max_bits:
+    def __init__(self, max_bits: int = Depth.max_depth_bits()):
+        if 0 > max_bits or Depth.max_depth_bits() > max_bits:
             raise ValueError('Illegal max_bits value: %d' % max_bits)
 
         n_values = 1 << max_bits
 
         maps = [((-1,), (-1,))] * max_bits
         for b in range(max_bits):
-            b_max = ColorDepth.max_color_value(b + 1)
+            b_max = Depth.max_color_value(b + 1)
             depth_to_max_depth = [-1] * n_values
             for v in range(n_values):
                 spacing = (n_values - 1) / b_max
@@ -79,8 +79,8 @@ class DepthMapper:
             raise ValueError('No mapping found for: target_depth=%d' % target_depth_bits, e)
 
 
-class Color(typing.NamedTuple('Color', (('r', int), ('g', int), ('b', int), ('brightness', float),
-                                        ('depth', ColorDepth)))):
+class Color(NamedTuple('Color', (('r', int), ('g', int), ('b', int), ('brightness', float),
+                                        ('depth', Depth)))):
     """Color representation for ledshim colors
 
     Depth is only virtual, narrowing the available colors within the 8-bit channel
@@ -88,13 +88,13 @@ class Color(typing.NamedTuple('Color', (('r', int), ('g', int), ('b', int), ('br
     pass
 
 
-class ColorFactory(abc.ABC):
+class Factory(abc.ABC):
     MAX_BRIGHTNESS = 1.0  # LED SHIM brightness is a value between 0.0 and 1.0
     DEPTH_MAPPER = DepthMapper()  # init static mapping tables
 
     @classmethod
     def color_for(cls, r: int, g: int, b: int, brightness: float = MAX_BRIGHTNESS,
-                  depth=ColorDepth.max_depth()) -> Color:
+                  depth=Depth.max_depth()) -> Color:
         """Creates a new 24-bit LedColor for the given args
 
         Main factory function for colors. Allows only valid values for the named tuple.
@@ -108,24 +108,24 @@ class ColorFactory(abc.ABC):
         :return: The new and valid LedColor
         """
         try:
-            red = ColorFactory.DEPTH_MAPPER.get_value(r, depth.r, ColorDepth.max_depth().r)
-            green = ColorFactory.DEPTH_MAPPER.get_value(g, depth.g, ColorDepth.max_depth().g)
-            blue = ColorFactory.DEPTH_MAPPER.get_value(b, depth.b, ColorDepth.max_depth().b)
+            red = Factory.DEPTH_MAPPER.get_value(r, depth.r, Depth.max_depth().r)
+            green = Factory.DEPTH_MAPPER.get_value(g, depth.g, Depth.max_depth().g)
+            blue = Factory.DEPTH_MAPPER.get_value(b, depth.b, Depth.max_depth().b)
         except IndexError as e:
             raise ValueError("Illegal color component value for depth: r=%d, g=%d, b=%d, depth=%s" % (r, g, b, depth),
                              e)
 
-        if 0.0 > brightness or brightness > ColorFactory.MAX_BRIGHTNESS:
+        if 0.0 > brightness or brightness > Factory.MAX_BRIGHTNESS:
             raise ValueError('Illegal brightness value: %f' % brightness)
 
         return Color(red, green, blue, brightness, depth)
 
     @classmethod
-    def encode(cls, color: Color, depth: ColorDepth) -> Color:
+    def encode(cls, color: Color, depth: Depth) -> Color:
         return color._replace(
-            r=ColorFactory.DEPTH_MAPPER.get_value(color.r, ColorDepth.max_depth().r, depth.r),
-            g=ColorFactory.DEPTH_MAPPER.get_value(color.g, ColorDepth.max_depth().g, depth.g),
-            b=ColorFactory.DEPTH_MAPPER.get_value(color.b, ColorDepth.max_depth().b, depth.b),
+            r=Factory.DEPTH_MAPPER.get_value(color.r, Depth.max_depth().r, depth.r),
+            g=Factory.DEPTH_MAPPER.get_value(color.g, Depth.max_depth().g, depth.g),
+            b=Factory.DEPTH_MAPPER.get_value(color.b, Depth.max_depth().b, depth.b),
             depth=depth)
 
     @classmethod
@@ -137,7 +137,7 @@ class ColorFactory(abc.ABC):
         if 0.0 > f:
             raise ValueError('Negative dim factor: %f' % f)
 
-        return color._replace(brightness=min(color.brightness * f, ColorFactory.MAX_BRIGHTNESS))
+        return color._replace(brightness=min(color.brightness * f, Factory.MAX_BRIGHTNESS))
 
     @classmethod
     def shade(cls, color: Color, f: float) -> Color:
@@ -148,26 +148,26 @@ class ColorFactory(abc.ABC):
 
         try:
             # RGB values are in max_depth so we have to create a new color at max_depth and map it back to color depth
-            return ColorFactory.encode(ColorFactory.color_for(r, g, b, color.brightness), color.depth)
+            return Factory.encode(Factory.color_for(r, g, b, color.brightness), color.depth)
         except ValueError:
             raise ValueError('Component overflow. Shading not possible for factor: %f' % f)
 
 
 class NamedColor(abc.ABC):
     # Basic HTML color palette which can be properly displayed by LEDSHIM (https://en.wikipedia.org/wiki/Web_colors)
-    WHITE = ColorFactory.color_for(255, 255, 255)
-    SILVER = ColorFactory.color_for(191, 191, 191)
-    GRAY = ColorFactory.color_for(127, 127, 127)
-    BLACK = ColorFactory.color_for(0, 0, 0)
-    RED = ColorFactory.color_for(255, 0, 0)
-    MAROON = ColorFactory.color_for(127, 0, 0)
-    YELLOW = ColorFactory.color_for(255, 255, 0)
-    OLIVE = ColorFactory.color_for(127, 127, 0)
-    LIME = ColorFactory.color_for(0, 255, 0)
-    GREEN = ColorFactory.color_for(0, 127, 0)
-    AQUA = ColorFactory.color_for(0, 255, 255)
-    TEAL = ColorFactory.color_for(0, 127, 127)
-    BLUE = ColorFactory.color_for(0, 0, 255)
-    NAVY = ColorFactory.color_for(0, 0, 127)
-    FUCHSIA = ColorFactory.color_for(255, 0, 255)
-    PURPLE = ColorFactory.color_for(127, 0, 127)
+    WHITE = Factory.color_for(255, 255, 255)
+    SILVER = Factory.color_for(191, 191, 191)
+    GRAY = Factory.color_for(127, 127, 127)
+    BLACK = Factory.color_for(0, 0, 0)
+    RED = Factory.color_for(255, 0, 0)
+    MAROON = Factory.color_for(127, 0, 0)
+    YELLOW = Factory.color_for(255, 255, 0)
+    OLIVE = Factory.color_for(127, 127, 0)
+    LIME = Factory.color_for(0, 255, 0)
+    GREEN = Factory.color_for(0, 127, 0)
+    AQUA = Factory.color_for(0, 255, 255)
+    TEAL = Factory.color_for(0, 127, 127)
+    BLUE = Factory.color_for(0, 0, 255)
+    NAVY = Factory.color_for(0, 0, 127)
+    FUCHSIA = Factory.color_for(255, 0, 255)
+    PURPLE = Factory.color_for(127, 0, 127)
