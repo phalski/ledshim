@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='phalski-ledshim',
-    version='0.2.0',
+    version='0.2.1',
     packages=['phalski_ledshim'],
     url='https://github.com/phalski/phalski-ledshim',
     author='phalski',
