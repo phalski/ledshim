@@ -1,12 +1,12 @@
-import colorsys
 import time
+import colorsys
 
 from typing import Sequence
 
-from .. import Color, ColorChangeEvent, ColorSource
+from phalski_ledshim import app, client, color
 
 
-class Rainbow(ColorSource):
+class Rainbow(app.InfiniteColorSource):
 
     def __init__(self, pixels: Sequence[int], num_colors: int = 16, speed: float = 1.0):
         super().__init__(pixels)
@@ -17,15 +17,21 @@ class Rainbow(ColorSource):
             raise ValueError('speed must be greater than 0: %d' % speed)
 
         self._spacing = 360.0 / num_colors
-        self._speed =speed
+        self._speed = speed
 
-    def get(self):
+    def get_colors(self, num_pixels: int):
         hue = int(time.time() * 100 * self._speed) % 360
 
-        def rainbow_event(i: int, x: int):
+        def get_color(i: int):
             offset = i * self._spacing
             h = ((hue + offset) % 360) / 360.0
             r, g, b = [int(c * 255) for c in colorsys.hsv_to_rgb(h, 1.0, 1.0)]
-            return ColorChangeEvent([x], Color(r, g, b))
+            return color.Factory.color(r, g, b)
 
-        return [rainbow_event(i, x) for i, x in enumerate(self._pixels)]
+        return {i: get_color(i) for i in range(num_pixels)}
+
+
+if __name__ == '__main__':
+    a = app.App()
+    a.configure_worker(0.1, Rainbow(a.pixels, 60))
+    a.exec()

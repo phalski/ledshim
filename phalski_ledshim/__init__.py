@@ -1,3 +1,1 @@
-from .phalski_ledshim import Color, ColorChangeEvent, ColorSource, Palette, LedShim
-
-name = "phalski_ledshim"
+from __future__ import absolute_import
