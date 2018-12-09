@@ -230,16 +230,20 @@ class Factory(abc.ABC):
 
     @classmethod
     def single_stat_source(cls, pixels: Sequence[int],
+                           value_source: Callable[[], float],
                            spec: ValueSpecification,
                            default_color: color.Color,
                            *args: Tuple[float, color.Color]):
-        return ChartSource(pixels, SingleStat(len(pixels), spec, default_color, *args))
+        return ChartSource(pixels, SingleStat(len(pixels), spec, default_color, *args),
+                           value_source)
 
     @classmethod
     def health_stat_source(cls, pixels: Sequence[int],
+                           value_source: Callable[[], float],
                            spec: ValueSpecification,
                            t_warn: float,
                            t_err: float):
         return ChartSource(pixels,
                            SingleStat(len(pixels), spec, color.NamedColor.GREEN, (t_warn, color.NamedColor.YELLOW),
-                                      (t_err, color.NamedColor.RED)))
+                                      (t_err, color.NamedColor.RED)),
+                           value_source)
