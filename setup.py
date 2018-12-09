@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name='phalski-ledshim',
-    version='0.1.1',
-    packages=['phalski_ledshim', 'phalski_ledshim.animation', 'phalski_ledshim.charting', 'phalski_ledshim.threading'],
+    version='0.2.0',
+    packages=['phalski_ledshim'],
     url='https://github.com/phalski/phalski-ledshim',
     author='phalski',
     author_email='mail@phalski.com',
