@@ -33,5 +33,5 @@ class Rainbow(app.InfiniteColorSource):
 
 if __name__ == '__main__':
     a = app.App()
-    a.configure_worker([Rainbow(a.pixels, 60)], 0.1)
+    a.configure_worker(0.1, Rainbow(a.pixels, 60))
     a.exec()

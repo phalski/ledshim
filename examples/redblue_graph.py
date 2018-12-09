@@ -11,5 +11,5 @@ def value():
 
 if __name__ == '__main__':
     a = app.App()
-    a.configure_worker([chart.Factory.red_blue_bar_chart_source(a.pixels, value, lambda: 1 - value())], 0.1)
+    a.configure_worker(0.1, chart.Factory.red_blue_bar_chart_source(a.pixels, value, lambda: 1 - value()))
     a.exec()

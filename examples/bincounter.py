@@ -17,5 +17,5 @@ class Counter(object):
 if __name__ == '__main__':
     counter = Counter()
     a = app.App()
-    a.configure_worker([chart.Factory.bin_number_source(a.pixels, counter.get_and_increment)], 0.001)
+    a.configure_worker(0.001, chart.Factory.bin_number_source(a.pixels, counter.get_and_increment))
     a.exec()

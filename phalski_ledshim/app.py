@@ -33,9 +33,9 @@ class BaseColorSource(abc.ABC):
 
 class MultiSource(BaseColorSource):
 
-    def __init__(self, sources: List[BaseColorSource]):
+    def __init__(self, *args: BaseColorSource):
         super().__init__()
-        self.sources = sources
+        self.sources = list(args)
 
     def events(self) -> Generator[List[ledshim_client.ChangeEvent], None, None]:
         event_generators = [source.events() for source in self.sources]
@@ -160,8 +160,8 @@ class App(threading.Thread):
     def pixels(self):
         return self.client.pixels
 
-    def configure_worker(self, sources: List[BaseColorSource], delay: float, name=None):
-        self.workers.append(Worker(name or '<%d>' % len(self.workers), MultiSource(sources), self.shutdown, delay))
+    def configure_worker(self, delay: float, *args: BaseColorSource):
+        self.workers.append(Worker('<%d>' % len(self.workers), MultiSource(*args), self.shutdown, delay))
 
     def run(self):
 
