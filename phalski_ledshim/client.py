@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 
+import abc
 import ledshim
 
 from typing import NamedTuple, List, Sequence
 
 from phalski_ledshim import color
+
+__all__ = ['Factory']
 
 
 class ChangeEvent(NamedTuple('ChangeEvent', [('pixels', List[int]), ('color', color.Color)])):
@@ -26,7 +29,7 @@ class Client:
         self.clear_on_exit = True
         self.depth = depth
         self.pixels = list(range(ledshim.NUM_PIXELS))
-        self.state = [color.Factory.color_for(0, 0, 0, 0.0, self.depth)] * ledshim.NUM_PIXELS
+        self.state = [color.Factory.color(0, 0, 0, 0.0, self.depth)] * ledshim.NUM_PIXELS
 
         self.set_brightness(brightness)
         self.set_clear_on_exit(clear_on_exit)
@@ -57,8 +60,22 @@ class Client:
         ledshim.set_all(c.r, c.g, c.b, c.brightness)
 
     def clear(self):
-        self.state = [color.Factory.color_for(0, 0, 0, 0.0, self.depth)] * ledshim.NUM_PIXELS
+        self.state = [color.Factory.color(0, 0, 0, 0.0, self.depth)] * ledshim.NUM_PIXELS
         ledshim.clear()
 
     def show(self):
         ledshim.show()
+
+
+class Factory(abc.ABC):
+
+    @classmethod
+    def client(cls,
+               brightness: float = color.Factory.MAX_BRIGHTNESS,
+               clear_on_exit: bool = True,
+               depth: color.Depth = color.Depth.BIT24) -> Client:
+        return Client(brightness, clear_on_exit, depth)
+
+    @classmethod
+    def change_event(cls, pixel_color: color.Color, *args: int):
+        return ChangeEvent(list(args), pixel_color)

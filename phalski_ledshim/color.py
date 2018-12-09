@@ -2,7 +2,7 @@ import abc
 import enum
 from typing import NamedTuple
 
-__all__ = ['Color', 'Depth', 'Factory', 'NamedColor']
+__all__ = ['Depth', 'Factory', 'NamedColor']
 
 
 class Depth(enum.Enum):
@@ -93,8 +93,8 @@ class Factory(abc.ABC):
     DEPTH_MAPPER = DepthMapper()  # init static mapping tables
 
     @classmethod
-    def color_for(cls, r: int, g: int, b: int, brightness: float = MAX_BRIGHTNESS,
-                  depth=Depth.max_depth()) -> Color:
+    def color(cls, r: int, g: int, b: int, brightness: float = MAX_BRIGHTNESS,
+              depth=Depth.max_depth()) -> Color:
         """Creates a new 24-bit LedColor for the given args
 
         Main factory function for colors. Allows only valid values for the named tuple.
@@ -148,26 +148,26 @@ class Factory(abc.ABC):
 
         try:
             # RGB values are in max_depth so we have to create a new color at max_depth and map it back to color depth
-            return Factory.encode(Factory.color_for(r, g, b, color.brightness), color.depth)
+            return Factory.encode(Factory.color(r, g, b, color.brightness), color.depth)
         except ValueError:
             raise ValueError('Component overflow. Shading not possible for factor: %f' % f)
 
 
 class NamedColor(abc.ABC):
     # Basic HTML color palette which can be properly displayed by LEDSHIM (https://en.wikipedia.org/wiki/Web_colors)
-    WHITE = Factory.color_for(255, 255, 255)
-    SILVER = Factory.color_for(191, 191, 191)
-    GRAY = Factory.color_for(127, 127, 127)
-    BLACK = Factory.color_for(0, 0, 0)
-    RED = Factory.color_for(255, 0, 0)
-    MAROON = Factory.color_for(127, 0, 0)
-    YELLOW = Factory.color_for(255, 255, 0)
-    OLIVE = Factory.color_for(127, 127, 0)
-    LIME = Factory.color_for(0, 255, 0)
-    GREEN = Factory.color_for(0, 127, 0)
-    AQUA = Factory.color_for(0, 255, 255)
-    TEAL = Factory.color_for(0, 127, 127)
-    BLUE = Factory.color_for(0, 0, 255)
-    NAVY = Factory.color_for(0, 0, 127)
-    FUCHSIA = Factory.color_for(255, 0, 255)
-    PURPLE = Factory.color_for(127, 0, 127)
+    WHITE = Factory.color(255, 255, 255)
+    SILVER = Factory.color(191, 191, 191)
+    GRAY = Factory.color(127, 127, 127)
+    BLACK = Factory.color(0, 0, 0)
+    RED = Factory.color(255, 0, 0)
+    MAROON = Factory.color(127, 0, 0)
+    YELLOW = Factory.color(255, 255, 0)
+    OLIVE = Factory.color(127, 127, 0)
+    LIME = Factory.color(0, 255, 0)
+    GREEN = Factory.color(0, 127, 0)
+    AQUA = Factory.color(0, 255, 255)
+    TEAL = Factory.color(0, 127, 127)
+    BLUE = Factory.color(0, 0, 255)
+    NAVY = Factory.color(0, 0, 127)
+    FUCHSIA = Factory.color(255, 0, 255)
+    PURPLE = Factory.color(127, 0, 127)

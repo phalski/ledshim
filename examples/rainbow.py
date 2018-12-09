@@ -1,11 +1,9 @@
-from __future__ import absolute_import
-
-import colorsys
 import time
+import colorsys
 
 from typing import Sequence
 
-from phalski_ledshim import color, app
+from phalski_ledshim import app, client, color
 
 
 class Rainbow(app.InfiniteColorSource):
@@ -33,13 +31,7 @@ class Rainbow(app.InfiniteColorSource):
         return {i: get_color(i) for i in range(num_pixels)}
 
 
-class LedTest(app.ColorSource):
-
-    def __init__(self, pixels: Sequence[int]):
-        super().__init__(pixels, True)
-
-    def colors(self, num_pixels: int):
-        for c in [color.Factory.color(255, 0, 0), color.Factory.color(0, 255, 0),
-                  color.Factory.color(0, 0, 255)]:
-            for i in range(num_pixels):
-                yield {i: c}
+if __name__ == '__main__':
+    a = app.App()
+    a.configure_worker([Rainbow(a.pixels, 60)], 0.1)
+    a.exec()
