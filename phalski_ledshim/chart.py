@@ -244,6 +244,8 @@ class Factory(abc.ABC):
                            t_warn: float,
                            t_err: float):
         return ChartSource(pixels,
-                           SingleStat(len(pixels), spec, color.NamedColor.GREEN, (t_warn, color.NamedColor.YELLOW),
+                           SingleStat(len(pixels), spec, color.NamedColor.GREEN,
+                                      # orange is better distinguishable from green than yellow
+                                      (t_warn, color.Factory.color(255, 165, 0)),
                                       (t_err, color.NamedColor.RED)),
                            value_source)
